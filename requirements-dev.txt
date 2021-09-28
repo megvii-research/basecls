@@ -1,0 +1,10 @@
+autoflake>=1.4
+black>=21.9b0
+flake8>=3.9.2
+isort>=5.9.3
+pre-commit>=2.15.0
+pylint>=2.11.1
+pytest>=6.2.5
+pytest-cov>=2.12.1
+setuptools>=58.0.0
+torch>=1.9.0

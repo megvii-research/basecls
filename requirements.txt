@@ -1,0 +1,9 @@
+# basecore>=0.1.7
+crc32c
+dataclasses;python_version=='3.6'
+loguru
+megfile
+numpy>=1.18.0
+opencv_python>=4.0
+Pillow>=8.0.0
+tensorboardX>=2.4
