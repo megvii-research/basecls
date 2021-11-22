@@ -37,19 +37,20 @@ jobs:
           pip install megengine
           if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
           if [ -f requirements-dev.txt ]; then pip install -r requirements-dev.txt; fi
+          pip install git+https://github.com/megvii-research/basecore.git
 
-      # - name: Installation
-      #   run: python setup.py develop
+      - name: Installation
+        run: python setup.py develop
 
-      # - name: Lint
-      #   run: make lint
+      - name: Lint
+        run: make lint
 
-      # - name: Test
-      #   run: make test
+      - name: Test
+        run: make unittest
 
-      # - name: Coverage
-      # - uses: codecov/codecov-action@v2
-      #   with:
-      #     token: ${{ secrets.CODECOV_TOKEN }}
-      #     files: ./coverage.xml
-      #     flags: unittests
+      - name: Coverage
+        uses: codecov/codecov-action@v2
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
+          files: ./coverage.xml
+          flags: unittests
