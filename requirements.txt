@@ -1,4 +1,4 @@
-# basecore>=0.1.7
+# basecore>=0.1.8
 crc32c
 dataclasses;python_version=='3.6'
 loguru
