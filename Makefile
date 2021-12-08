@@ -1,14 +1,14 @@
 format:
-	autoflake -i --ignore-init-module-imports --remove-all-unused-imports -r basecls test
-	isort basecls test
-	black basecls test
-	flake8 basecls test
+	autoflake -i --ignore-init-module-imports --remove-all-unused-imports -r basecls test zoo
+	isort basecls test zoo
+	black basecls test zoo
+	flake8 basecls test zoo
 
 lint:
-	autoflake --ignore-init-module-imports --remove-all-unused-imports -r basecls test
-	isort --diff --check basecls test
-	black --diff --check --color basecls test
-	flake8 basecls test
+	autoflake --ignore-init-module-imports --remove-all-unused-imports -r basecls test zoo
+	isort --diff --check basecls test zoo
+	black --diff --check --color basecls test zoo
+	flake8 basecls test zoo
 
 unittest:
 	pytest --cov=basecls test

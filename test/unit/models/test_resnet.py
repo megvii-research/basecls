@@ -23,9 +23,22 @@ from basecls.models.resnet import (
 @pytest.mark.parametrize("group_w", [8])
 @pytest.mark.parametrize("se_r", [0.0, 0.25])
 @pytest.mark.parametrize("avg_down", [True, False])
+@pytest.mark.parametrize("drop_path_prob", [0.05, 0.1])
 @pytest.mark.parametrize("norm_name", ["BN"])
 @pytest.mark.parametrize("act_name", ["relu"])
-def test_block(Block, w_in, w_out, stride, bot_mul, group_w, se_r, avg_down, norm_name, act_name):
+def test_block(
+    Block,
+    w_in,
+    w_out,
+    stride,
+    bot_mul,
+    group_w,
+    se_r,
+    avg_down,
+    drop_path_prob,
+    norm_name,
+    act_name,
+):
     m = Block(
         w_in,
         w_out,
@@ -34,6 +47,7 @@ def test_block(Block, w_in, w_out, stride, bot_mul, group_w, se_r, avg_down, nor
         group_w=group_w,
         se_r=se_r,
         avg_down=avg_down,
+        drop_path_prob=drop_path_prob,
         norm_name=norm_name,
         act_name=act_name,
     )
@@ -59,13 +73,15 @@ def test_stem(Stem, w_in, w_out, norm_name, act_name):
 @pytest.mark.parametrize("stride", [1, 2])
 @pytest.mark.parametrize("depth", [2])
 @pytest.mark.parametrize("block_func", [RegBottleneckBlock, ResBasicBlock, ResBottleneckBlock])
-def test_any_stage(w_in, w_out, stride, depth, block_func):
+@pytest.mark.parametrize("drop_path_prob", [[0.05, 0.1]])
+def test_any_stage(w_in, w_out, stride, depth, block_func, drop_path_prob):
     m = AnyStage(
         w_in,
         w_out,
         stride,
         depth,
         block_func,
+        drop_path_prob,
         bot_mul=1.0,
         group_w=4,
         se_r=0.0,

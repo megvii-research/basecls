@@ -15,8 +15,9 @@ from collections import OrderedDict
 from typing import Callable, Optional, Union
 
 import cv2
-import megengine
+import megengine as mge
 import megengine.functional as F
+import megengine.hub as hub
 import megengine.module as M
 import numpy as np
 from loguru import logger
@@ -83,6 +84,7 @@ class Attention(M.Module):
         dim: input Number of input channels.
         num_heads: Number of attention heads. Default: ``8``
         qkv_bias: If True, add a learnable bias to query, key, value. Default: ``False``
+        qk_scale: Override default qk scale of ``head_dim ** -0.5`` if set.
         attn_drop: Dropout ratio of attention weight. Default: ``0.0``
         proj_drop: Dropout ratio of output. Default: ``0.0``
     """
@@ -92,13 +94,14 @@ class Attention(M.Module):
         dim: int,
         num_heads: int = 8,
         qkv_bias: bool = False,
+        qk_scale: float = None,
         attn_drop: float = 0.0,
         proj_drop: float = 0.0,
     ):
         super().__init__()
         self.num_heads = num_heads
         head_dim = dim // num_heads
-        self.scale = head_dim ** -0.5
+        self.scale = qk_scale or head_dim ** -0.5
 
         self.qkv = M.Linear(dim, dim * 3, bias=qkv_bias)
         self.softmax = M.Softmax(axis=-1)
@@ -132,8 +135,8 @@ class FFN(M.Module):
         in_features: Number of input features.
         hidden_features: Number of input features. Default: ``None``
         out_features: Number of output features. Default: ``None``
-        act_name: activation function. Default: ``"gelu"``
         drop: Dropout ratio. Default: ``0.0``
+        act_name: activation function. Default: ``"gelu"``
     """
 
     def __init__(
@@ -141,8 +144,8 @@ class FFN(M.Module):
         in_features: int,
         hidden_features: int = None,
         out_features: int = None,
-        act_name: str = "gelu",
         drop: float = 0.0,
+        act_name: str = "gelu",
     ):
         super().__init__()
         out_features = out_features or in_features
@@ -169,11 +172,12 @@ class EncoderBlock(M.Module):
         num_heads: Number of attention heads.
         ffn_ratio: Ratio of ffn hidden dim to embedding dim. Default: ``4.0``
         qkv_bias: If True, add a learnable bias to query, key, value. Default: ``False``
-        attn_drop: Dropout ratio of attention weight. Default: ``0.0``
+        qk_scale: Override default qk scale of ``head_dim ** -0.5`` if set.
         drop: Dropout ratio of non-attention weight. Default: ``0.0``
+        attn_drop: Dropout ratio of attention weight. Default: ``0.0``
         drop_path: Stochastic depth rate. Default: ``0.0``
         norm_name: Normalization layer. Default: ``"LN"``
-        act_name: activation function. Default: ``"gelu"``
+        act_name: Activation layer. Default: ``"gelu"``
     """
 
     def __init__(
@@ -182,6 +186,7 @@ class EncoderBlock(M.Module):
         num_heads: int,
         ffn_ratio: float = 4.0,
         qkv_bias: bool = False,
+        qk_scale: float = None,
         attn_drop: float = 0.0,
         drop: float = 0.0,
         drop_path: float = 0.0,
@@ -192,14 +197,19 @@ class EncoderBlock(M.Module):
         super().__init__()
         self.norm1 = norm2d(norm_name, dim)
         self.attn = Attention(
-            dim, num_heads=num_heads, qkv_bias=qkv_bias, attn_drop=attn_drop, proj_drop=drop
+            dim,
+            num_heads=num_heads,
+            qkv_bias=qkv_bias,
+            qk_scale=qk_scale,
+            attn_drop=attn_drop,
+            proj_drop=drop,
         )
         # NOTE: drop path for stochastic depth, we shall see if this is better than dropout here
         self.drop_path = DropPath(drop_path) if drop_path > 0.0 else None
         self.norm2 = norm2d(norm_name, dim)
         ffn_hidden_dim = int(dim * ffn_ratio)
         self.ffn = FFN(
-            in_features=dim, hidden_features=ffn_hidden_dim, act_name=act_name, drop=drop
+            in_features=dim, hidden_features=ffn_hidden_dim, drop=drop, act_name=act_name
         )
 
     def forward(self, x):
@@ -225,6 +235,7 @@ class ViT(M.Module):
         num_heads: Number of attention heads. Default: ``12``
         ffn_ratio: Ratio of ffn hidden dim to embedding dim. Default: ``4.0``
         qkv_bias: If True, add a learnable bias to query, key, value. Default: ``True``
+        qk_scale: Override default qk scale of head_dim ** -0.5 if set. Default: ``None``
         representation_size: Size of representation layer (pre-logits). Default: ``None``
         distilled: Includes a distillation token and head. Default: ``False``
         drop_rate: Dropout rate. Default: ``0.0``
@@ -246,6 +257,7 @@ class ViT(M.Module):
         num_heads: int = 12,
         ffn_ratio: float = 4.0,
         qkv_bias: bool = True,
+        qk_scale: float = None,
         representation_size: int = None,
         distilled: bool = False,
         drop_rate: float = 0.0,
@@ -263,11 +275,11 @@ class ViT(M.Module):
         self.patch_embed = embed_layer(img_size, patch_size, in_chans, embed_dim)
         num_patches = self.patch_embed.num_patches
         # CLS & DST Tokens
-        self.cls_token = megengine.Parameter(F.zeros([1, 1, embed_dim]))
-        self.dist_token = megengine.Parameter(F.zeros([1, 1, embed_dim])) if distilled else None
+        self.cls_token = mge.Parameter(F.zeros([1, 1, embed_dim]))
+        self.dist_token = mge.Parameter(F.zeros([1, 1, embed_dim])) if distilled else None
         self.num_tokens = 2 if distilled else 1
         # Pos Embedding
-        self.pos_embed = megengine.Parameter(F.zeros([1, num_patches + self.num_tokens, embed_dim]))
+        self.pos_embed = mge.Parameter(F.zeros([1, num_patches + self.num_tokens, embed_dim]))
         self.pos_drop = M.Dropout(drop_rate)
         # Blocks
         dpr = [
@@ -280,8 +292,9 @@ class ViT(M.Module):
                     num_heads=num_heads,
                     ffn_ratio=ffn_ratio,
                     qkv_bias=qkv_bias,
-                    attn_drop=attn_drop_rate,
+                    qk_scale=qk_scale,
                     drop=drop_rate,
+                    attn_drop=attn_drop_rate,
                     drop_path=dpr[i],
                     norm_name=norm_name,
                     act_name=act_name,
@@ -349,7 +362,7 @@ class ViT(M.Module):
 
     def load_state_dict(
         self,
-        state_dict: Union[dict, Callable[[str, megengine.Tensor], Optional[np.ndarray]]],
+        state_dict: Union[dict, Callable[[str, mge.Tensor], Optional[np.ndarray]]],
         strict=True,
     ):
         if "pos_embed" in state_dict:
@@ -362,7 +375,7 @@ class ViT(M.Module):
             logger.info(
                 "Resized position embedding: {} to {}", old_pos_embed.shape, self.pos_embed.shape
             )
-            if isinstance(old_pos_embed, megengine.Tensor):
+            if isinstance(old_pos_embed, mge.Tensor):
                 old_pos_embed = old_pos_embed.numpy()
             pos_emb_tok, old_pos_emb_grid = np.split(old_pos_embed, [self.num_tokens], axis=1)
             old_pos_emb_grid = old_pos_emb_grid.reshape(old_gs, old_gs, -1).transpose(2, 0, 1)
@@ -377,8 +390,8 @@ class ViT(M.Module):
                 .reshape(1, new_gs ** 2, -1)
             )
             new_pos_embed = np.concatenate([pos_emb_tok, new_pos_embed_grid], axis=1)
-            if isinstance(old_pos_embed, megengine.Tensor):
-                new_pos_embed = megengine.Parameter(new_pos_embed)
+            if isinstance(old_pos_embed, mge.Tensor):
+                new_pos_embed = mge.Parameter(new_pos_embed)
             state_dict["pos_embed"] = new_pos_embed
         super().load_state_dict(state_dict, strict)
 
@@ -390,6 +403,10 @@ def _build_vit(**kwargs):
 
 
 @registers.models.register()
+@hub.pretrained(
+    "https://data.megengine.org.cn/research/basecls/models/"
+    "vit/vit_tiny_patch16_224/vit_tiny_patch16_224.pkl"
+)
 def vit_tiny_patch16_224(**kwargs):
     model_args = dict(patch_size=16, embed_dim=192, num_heads=3)
     recursive_update(model_args, kwargs)
@@ -397,6 +414,10 @@ def vit_tiny_patch16_224(**kwargs):
 
 
 @registers.models.register()
+@hub.pretrained(
+    "https://data.megengine.org.cn/research/basecls/models/"
+    "vit/vit_tiny_patch16_384/vit_tiny_patch16_384.pkl"
+)
 def vit_tiny_patch16_384(**kwargs):
     model_args = dict(img_size=384)
     recursive_update(model_args, kwargs)
@@ -404,6 +425,10 @@ def vit_tiny_patch16_384(**kwargs):
 
 
 @registers.models.register()
+@hub.pretrained(
+    "https://data.megengine.org.cn/research/basecls/models/"
+    "vit/vit_small_patch16_224/vit_small_patch16_224.pkl"
+)
 def vit_small_patch16_224(**kwargs):
     model_args = dict(patch_size=16, embed_dim=384, num_heads=6)
     recursive_update(model_args, kwargs)
@@ -411,6 +436,10 @@ def vit_small_patch16_224(**kwargs):
 
 
 @registers.models.register()
+@hub.pretrained(
+    "https://data.megengine.org.cn/research/basecls/models/"
+    "vit/vit_small_patch16_384/vit_small_patch16_384.pkl"
+)
 def vit_small_patch16_384(**kwargs):
     model_args = dict(img_size=384)
     recursive_update(model_args, kwargs)
@@ -418,6 +447,10 @@ def vit_small_patch16_384(**kwargs):
 
 
 @registers.models.register()
+@hub.pretrained(
+    "https://data.megengine.org.cn/research/basecls/models/"
+    "vit/vit_small_patch32_224/vit_small_patch32_224.pkl"
+)
 def vit_small_patch32_224(**kwargs):
     model_args = dict(patch_size=32, embed_dim=384, num_heads=6)
     recursive_update(model_args, kwargs)
@@ -425,6 +458,10 @@ def vit_small_patch32_224(**kwargs):
 
 
 @registers.models.register()
+@hub.pretrained(
+    "https://data.megengine.org.cn/research/basecls/models/"
+    "vit/vit_small_patch32_384/vit_small_patch32_384.pkl"
+)
 def vit_small_patch32_384(**kwargs):
     model_args = dict(img_size=384)
     recursive_update(model_args, kwargs)
@@ -432,6 +469,10 @@ def vit_small_patch32_384(**kwargs):
 
 
 @registers.models.register()
+@hub.pretrained(
+    "https://data.megengine.org.cn/research/basecls/models/"
+    "vit/vit_base_patch16_224/vit_base_patch16_224.pkl"
+)
 def vit_base_patch16_224(**kwargs):
     model_args = dict(patch_size=16, embed_dim=768, num_heads=12)
     recursive_update(model_args, kwargs)
@@ -439,6 +480,10 @@ def vit_base_patch16_224(**kwargs):
 
 
 @registers.models.register()
+@hub.pretrained(
+    "https://data.megengine.org.cn/research/basecls/models/"
+    "vit/vit_base_patch16_384/vit_base_patch16_384.pkl"
+)
 def vit_base_patch16_384(**kwargs):
     model_args = dict(img_size=384)
     recursive_update(model_args, kwargs)
@@ -446,6 +491,10 @@ def vit_base_patch16_384(**kwargs):
 
 
 @registers.models.register()
+@hub.pretrained(
+    "https://data.megengine.org.cn/research/basecls/models/"
+    "vit/vit_base_patch32_224/vit_base_patch32_224.pkl"
+)
 def vit_base_patch32_224(**kwargs):
     model_args = dict(patch_size=32, embed_dim=768, num_heads=12)
     recursive_update(model_args, kwargs)
@@ -453,6 +502,10 @@ def vit_base_patch32_224(**kwargs):
 
 
 @registers.models.register()
+@hub.pretrained(
+    "https://data.megengine.org.cn/research/basecls/models/"
+    "vit/vit_base_patch32_384/vit_base_patch32_384.pkl"
+)
 def vit_base_patch32_384(**kwargs):
     model_args = dict(img_size=384)
     recursive_update(model_args, kwargs)

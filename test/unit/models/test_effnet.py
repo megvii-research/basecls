@@ -4,8 +4,9 @@ import megengine as mge
 import megengine.module as M
 import pytest
 
-from basecls.models.effnet import EffStage, FuseMBConv
+from basecls.models.effnet import FuseMBConv
 from basecls.models.mbnet import MBConv
+from basecls.models.resnet import AnyStage
 
 
 @pytest.mark.parametrize("w_in", [32])
@@ -35,8 +36,8 @@ def test_block(
 @pytest.mark.parametrize("depth", [2])
 @pytest.mark.parametrize("block_func", [MBConv, FuseMBConv])
 @pytest.mark.parametrize("drop_path_prob", [[0.05, 0.1]])
-def test_eff_stage(w_in, w_out, stride, depth, block_func, drop_path_prob):
-    m = EffStage(
+def test_any_stage(w_in, w_out, stride, depth, block_func, drop_path_prob):
+    m = AnyStage(
         w_in,
         w_out,
         stride,

@@ -18,10 +18,12 @@ from functools import partial
 from numbers import Real
 from typing import Any, Callable, Mapping, Sequence, Union
 
+import megengine.hub as hub
 import megengine.module as M
 
 from basecls.layers import (
     SE,
+    DropPath,
     activation,
     build_head,
     conv2d,
@@ -54,6 +56,7 @@ class ResBasicBlock(M.Module):
         bot_mul: float,
         se_r: float,
         avg_down: bool,
+        drop_path_prob: float,
         norm_name: str,
         act_name: str,
         **kwargs,
@@ -77,6 +80,7 @@ class ResBasicBlock(M.Module):
         self.b_bn.final_bn = True
         if w_se > 0:
             self.se = SE(w_out, w_se, act_name)
+        self.drop_path = DropPath(drop_path_prob)
         self.act = activation(act_name)
 
     def forward(self, x):
@@ -94,6 +98,7 @@ class ResBasicBlock(M.Module):
         x = self.b_bn(x)
         if getattr(self, "se", None) is not None:
             x = self.se(x)
+        x = self.drop_path(x)
         x += x_p
         x = self.act(x)
         return x
@@ -111,6 +116,7 @@ class ResBottleneckBlock(M.Module):
         group_w: int,
         se_r: float,
         avg_down: bool,
+        drop_path_prob: float,
         norm_name: str,
         act_name: str,
         **kwargs,
@@ -138,6 +144,7 @@ class ResBottleneckBlock(M.Module):
         self.c_bn.final_bn = True
         if w_se > 0:
             self.se = SE(w_out, w_se, act_name)
+        self.drop_path = DropPath(drop_path_prob)
         self.act = activation(act_name)
 
     def forward(self, x):
@@ -158,6 +165,7 @@ class ResBottleneckBlock(M.Module):
         x = self.c_bn(x)
         if getattr(self, "se", None) is not None:
             x = self.se(x)
+        x = self.drop_path(x)
         x += x_p
         x = self.act(x)
         return x
@@ -232,12 +240,19 @@ class AnyStage(M.Module):
     """AnyNet stage (sequence of blocks w/ the same output shape)."""
 
     def __init__(
-        self, w_in: int, w_out: int, stride: int, depth: int, block_func: Callable, **kwargs
+        self,
+        w_in: int,
+        w_out: int,
+        stride: int,
+        depth: int,
+        block_func: Callable,
+        drop_path_prob: Sequence[float],
+        **kwargs,
     ):
         super().__init__()
         self.depth = depth
         for i in range(depth):
-            block = block_func(w_in, w_out, stride, **kwargs)
+            block = block_func(w_in, w_out, stride, drop_path_prob=drop_path_prob[i], **kwargs)
             setattr(self, f"b{i + 1}", block)
             stride, w_in = 1, w_out
 
@@ -266,6 +281,7 @@ class ResNet(M.Module):
             Default: ``1.0``
         group_ws: group widths for each stage (applies to bottleneck block). Default: ``None``
         se_r: Squeeze-and-Excitation (SE) ratio. Default: ``0.0``
+        drop_path_prob: drop path probability. Default: ``0.0``
         zero_init_final_gamma: enable zero-initialize or not. Default: ``False``
         norm_name: normalization function. Default: ``"BN"``
         act_name: activation function. Default: ``"relu"``
@@ -284,6 +300,7 @@ class ResNet(M.Module):
         group_ws: Sequence[int] = None,
         se_r: float = 0.0,
         avg_down: bool = False,
+        drop_path_prob: float = 0.0,
         zero_init_final_gamma: bool = False,
         norm_name: str = "BN",
         act_name: str = "relu",
@@ -300,9 +317,11 @@ class ResNet(M.Module):
             bot_muls = [bot_muls] * len(depths)
         if group_ws is None:
             group_ws = [None] * len(depths)
-        model_args = [depths, widths, strides, bot_muls, group_ws]
+        drop_path_prob_iter = (i / sum(depths) * drop_path_prob for i in range(sum(depths)))
+        drop_path_probs = [[next(drop_path_prob_iter) for _ in range(d)] for d in depths]
+        model_args = [depths, widths, strides, bot_muls, group_ws, drop_path_probs]
         prev_w = stem_w
-        for i, (d, w, s, b, g) in enumerate(zip(*model_args)):
+        for i, (d, w, s, b, g, dp_p) in enumerate(zip(*model_args)):
             stage = AnyStage(
                 prev_w,
                 w,
@@ -313,6 +332,7 @@ class ResNet(M.Module):
                 group_w=g,
                 se_r=se_r,
                 avg_down=avg_down,
+                drop_path_prob=dp_p,
                 norm_name=norm_name,
                 act_name=act_name,
             )
@@ -369,6 +389,9 @@ def _build_resnet(**kwargs):
 
 
 @registers.models.register()
+@hub.pretrained(
+    "https://data.megengine.org.cn/research/basecls/models/resnet/resnet18/resnet18.pkl"
+)
 def resnet18(**kwargs):
     model_args = dict(
         block_name=ResBasicBlock,
@@ -381,6 +404,9 @@ def resnet18(**kwargs):
 
 
 @registers.models.register()
+@hub.pretrained(
+    "https://data.megengine.org.cn/research/basecls/models/resnet/resnet34/resnet34.pkl"
+)
 def resnet34(**kwargs):
     model_args = dict(
         block_name=ResBasicBlock,
@@ -393,6 +419,9 @@ def resnet34(**kwargs):
 
 
 @registers.models.register()
+@hub.pretrained(
+    "https://data.megengine.org.cn/research/basecls/models/resnet/resnet50/resnet50.pkl"
+)
 def resnet50(**kwargs):
     model_args = dict(
         block_name=ResBottleneckBlock,
@@ -407,6 +436,9 @@ def resnet50(**kwargs):
 
 
 @registers.models.register()
+@hub.pretrained(
+    "https://data.megengine.org.cn/research/basecls/models/resnet/resnet101/resnet101.pkl"
+)
 def resnet101(**kwargs):
     model_args = dict(
         block_name=ResBottleneckBlock,
@@ -421,6 +453,9 @@ def resnet101(**kwargs):
 
 
 @registers.models.register()
+@hub.pretrained(
+    "https://data.megengine.org.cn/research/basecls/models/resnet/resnet152/resnet152.pkl"
+)
 def resnet152(**kwargs):
     model_args = dict(
         block_name=ResBottleneckBlock,
@@ -435,6 +470,9 @@ def resnet152(**kwargs):
 
 
 @registers.models.register()
+@hub.pretrained(
+    "https://data.megengine.org.cn/research/basecls/models/resnet/resnet18d/resnet18d.pkl"
+)
 def resnet18d(**kwargs):
     model_args = dict(stem_name=ResDeepStem, avg_down=True)
     recursive_update(model_args, kwargs)
@@ -442,6 +480,9 @@ def resnet18d(**kwargs):
 
 
 @registers.models.register()
+@hub.pretrained(
+    "https://data.megengine.org.cn/research/basecls/models/resnet/resnet34d/resnet34d.pkl"
+)
 def resnet34d(**kwargs):
     model_args = dict(stem_name=ResDeepStem, avg_down=True)
     recursive_update(model_args, kwargs)
@@ -449,6 +490,9 @@ def resnet34d(**kwargs):
 
 
 @registers.models.register()
+@hub.pretrained(
+    "https://data.megengine.org.cn/research/basecls/models/resnet/resnet50d/resnet50d.pkl"
+)
 def resnet50d(**kwargs):
     model_args = dict(stem_name=ResDeepStem, avg_down=True)
     recursive_update(model_args, kwargs)
@@ -456,6 +500,9 @@ def resnet50d(**kwargs):
 
 
 @registers.models.register()
+@hub.pretrained(
+    "https://data.megengine.org.cn/research/basecls/models/resnet/resnet101d/resnet101d.pkl"
+)
 def resnet101d(**kwargs):
     model_args = dict(stem_name=ResDeepStem, avg_down=True)
     recursive_update(model_args, kwargs)
@@ -463,6 +510,9 @@ def resnet101d(**kwargs):
 
 
 @registers.models.register()
+@hub.pretrained(
+    "https://data.megengine.org.cn/research/basecls/models/resnet/resnet152d/resnet152d.pkl"
+)
 def resnet152d(**kwargs):
     model_args = dict(stem_name=ResDeepStem, avg_down=True)
     recursive_update(model_args, kwargs)
@@ -470,6 +520,10 @@ def resnet152d(**kwargs):
 
 
 @registers.models.register()
+@hub.pretrained(
+    "https://data.megengine.org.cn/research/basecls/models/"
+    "resnet/resnext50_32x4d/resnext50_32x4d.pkl"
+)
 def resnext50_32x4d(**kwargs):
     model_args = dict(bot_muls=[0.5, 0.5, 0.5, 0.5], group_ws=[4, 8, 16, 32])
     recursive_update(model_args, kwargs)
@@ -477,6 +531,10 @@ def resnext50_32x4d(**kwargs):
 
 
 @registers.models.register()
+@hub.pretrained(
+    "https://data.megengine.org.cn/research/basecls/models/"
+    "resnet/resnext101_32x4d/resnext101_32x4d.pkl"
+)
 def resnext101_32x4d(**kwargs):
     model_args = dict(bot_muls=[0.5, 0.5, 0.5, 0.5], group_ws=[4, 8, 16, 32])
     recursive_update(model_args, kwargs)
@@ -484,6 +542,10 @@ def resnext101_32x4d(**kwargs):
 
 
 @registers.models.register()
+@hub.pretrained(
+    "https://data.megengine.org.cn/research/basecls/models/"
+    "resnet/resnext101_32x8d/resnext101_32x8d.pkl"
+)
 def resnext101_32x8d(**kwargs):
     model_args = dict(bot_muls=[1.0, 1.0, 1.0, 1.0], group_ws=[8, 16, 32, 64])
     recursive_update(model_args, kwargs)
@@ -491,6 +553,10 @@ def resnext101_32x8d(**kwargs):
 
 
 @registers.models.register()
+@hub.pretrained(
+    "https://data.megengine.org.cn/research/basecls/models/"
+    "resnet/resnext101_64x4d/resnext101_64x4d.pkl"
+)
 def resnext101_64x4d(**kwargs):
     model_args = dict(bot_muls=[1.0, 1.0, 1.0, 1.0], group_ws=[4, 8, 16, 32])
     recursive_update(model_args, kwargs)
@@ -498,6 +564,10 @@ def resnext101_64x4d(**kwargs):
 
 
 @registers.models.register()
+@hub.pretrained(
+    "https://data.megengine.org.cn/research/basecls/models/"
+    "resnet/resnext152_32x4d/resnext152_32x4d.pkl"
+)
 def resnext152_32x4d(**kwargs):
     model_args = dict(bot_muls=[0.5, 0.5, 0.5, 0.5], group_ws=[4, 8, 16, 32])
     recursive_update(model_args, kwargs)
@@ -505,6 +575,10 @@ def resnext152_32x4d(**kwargs):
 
 
 @registers.models.register()
+@hub.pretrained(
+    "https://data.megengine.org.cn/research/basecls/models/"
+    "resnet/resnext152_32x8d/resnext152_32x8d.pkl"
+)
 def resnext152_32x8d(**kwargs):
     model_args = dict(bot_muls=[1.0, 1.0, 1.0, 1.0], group_ws=[8, 16, 32, 64])
     recursive_update(model_args, kwargs)
@@ -512,6 +586,10 @@ def resnext152_32x8d(**kwargs):
 
 
 @registers.models.register()
+@hub.pretrained(
+    "https://data.megengine.org.cn/research/basecls/models/"
+    "resnet/resnext152_64x4d/resnext152_64x4d.pkl"
+)
 def resnext152_64x4d(**kwargs):
     model_args = dict(bot_muls=[1.0, 1.0, 1.0, 1.0], group_ws=[4, 8, 16, 32])
     recursive_update(model_args, kwargs)
@@ -519,6 +597,9 @@ def resnext152_64x4d(**kwargs):
 
 
 @registers.models.register()
+@hub.pretrained(
+    "https://data.megengine.org.cn/research/basecls/models/resnet/se_resnet18/se_resnet18.pkl"
+)
 def se_resnet18(**kwargs):
     model_args = dict(se_r=0.0625)
     recursive_update(model_args, kwargs)
@@ -526,6 +607,9 @@ def se_resnet18(**kwargs):
 
 
 @registers.models.register()
+@hub.pretrained(
+    "https://data.megengine.org.cn/research/basecls/models/resnet/se_resnet34/se_resnet34.pkl"
+)
 def se_resnet34(**kwargs):
     model_args = dict(se_r=0.0625)
     recursive_update(model_args, kwargs)
@@ -533,6 +617,9 @@ def se_resnet34(**kwargs):
 
 
 @registers.models.register()
+@hub.pretrained(
+    "https://data.megengine.org.cn/research/basecls/models/resnet/se_resnet50/se_resnet50.pkl"
+)
 def se_resnet50(**kwargs):
     model_args = dict(se_r=0.0625)
     recursive_update(model_args, kwargs)
@@ -540,6 +627,9 @@ def se_resnet50(**kwargs):
 
 
 @registers.models.register()
+@hub.pretrained(
+    "https://data.megengine.org.cn/research/basecls/models/resnet/se_resnet101/se_resnet101.pkl"
+)
 def se_resnet101(**kwargs):
     model_args = dict(se_r=0.0625)
     recursive_update(model_args, kwargs)
@@ -547,6 +637,9 @@ def se_resnet101(**kwargs):
 
 
 @registers.models.register()
+@hub.pretrained(
+    "https://data.megengine.org.cn/research/basecls/models/resnet/se_resnet152/se_resnet152.pkl"
+)
 def se_resnet152(**kwargs):
     model_args = dict(se_r=0.0625)
     recursive_update(model_args, kwargs)
@@ -554,6 +647,10 @@ def se_resnet152(**kwargs):
 
 
 @registers.models.register()
+@hub.pretrained(
+    "https://data.megengine.org.cn/research/basecls/models/"
+    "resnet/se_resnext50_32x4d/se_resnext50_32x4d.pkl"
+)
 def se_resnext50_32x4d(**kwargs):
     model_args = dict(se_r=0.0625)
     recursive_update(model_args, kwargs)
@@ -561,6 +658,10 @@ def se_resnext50_32x4d(**kwargs):
 
 
 @registers.models.register()
+@hub.pretrained(
+    "https://data.megengine.org.cn/research/basecls/models/"
+    "resnet/se_resnext101_32x4d/se_resnext101_32x4d.pkl"
+)
 def se_resnext101_32x4d(**kwargs):
     model_args = dict(se_r=0.0625)
     recursive_update(model_args, kwargs)
@@ -568,6 +669,10 @@ def se_resnext101_32x4d(**kwargs):
 
 
 @registers.models.register()
+@hub.pretrained(
+    "https://data.megengine.org.cn/research/basecls/models/"
+    "resnet/se_resnext101_32x8d/se_resnext101_32x8d.pkl"
+)
 def se_resnext101_32x8d(**kwargs):
     model_args = dict(se_r=0.0625)
     recursive_update(model_args, kwargs)
@@ -575,6 +680,10 @@ def se_resnext101_32x8d(**kwargs):
 
 
 @registers.models.register()
+@hub.pretrained(
+    "https://data.megengine.org.cn/research/basecls/models/"
+    "resnet/se_resnext101_64x4d/se_resnext101_64x4d.pkl"
+)
 def se_resnext101_64x4d(**kwargs):
     model_args = dict(se_r=0.0625)
     recursive_update(model_args, kwargs)
@@ -582,6 +691,10 @@ def se_resnext101_64x4d(**kwargs):
 
 
 @registers.models.register()
+@hub.pretrained(
+    "https://data.megengine.org.cn/research/basecls/models/"
+    "resnet/se_resnext152_32x4d/se_resnext152_32x4d.pkl"
+)
 def se_resnext152_32x4d(**kwargs):
     model_args = dict(se_r=0.0625)
     recursive_update(model_args, kwargs)
@@ -589,6 +702,10 @@ def se_resnext152_32x4d(**kwargs):
 
 
 @registers.models.register()
+@hub.pretrained(
+    "https://data.megengine.org.cn/research/basecls/models/"
+    "resnet/se_resnext152_32x8d/se_resnext152_32x8d.pkl"
+)
 def se_resnext152_32x8d(**kwargs):
     model_args = dict(se_r=0.0625)
     recursive_update(model_args, kwargs)
@@ -596,6 +713,10 @@ def se_resnext152_32x8d(**kwargs):
 
 
 @registers.models.register()
+@hub.pretrained(
+    "https://data.megengine.org.cn/research/basecls/models/"
+    "resnet/se_resnext152_64x4d/se_resnext152_64x4d.pkl"
+)
 def se_resnext152_64x4d(**kwargs):
     model_args = dict(se_r=0.0625)
     recursive_update(model_args, kwargs)
@@ -603,6 +724,10 @@ def se_resnext152_64x4d(**kwargs):
 
 
 @registers.models.register()
+@hub.pretrained(
+    "https://data.megengine.org.cn/research/basecls/models/"
+    "resnet/wide_resnet50_2/wide_resnet50_2.pkl"
+)
 def wide_resnet50_2(**kwargs):
     model_args = dict(bot_muls=[0.5, 0.5, 0.5, 0.5])
     recursive_update(model_args, kwargs)
@@ -610,6 +735,10 @@ def wide_resnet50_2(**kwargs):
 
 
 @registers.models.register()
+@hub.pretrained(
+    "https://data.megengine.org.cn/research/basecls/models/"
+    "resnet/wide_resnet101_2/wide_resnet101_2.pkl"
+)
 def wide_resnet101_2(**kwargs):
     model_args = dict(bot_muls=[0.5, 0.5, 0.5, 0.5])
     recursive_update(model_args, kwargs)

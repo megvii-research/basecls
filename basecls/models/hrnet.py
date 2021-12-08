@@ -10,6 +10,7 @@ from functools import partial
 from typing import Any, List, Mapping, Optional
 
 import megengine.functional as F
+import megengine.hub as hub
 import megengine.module as M
 
 from basecls.layers import build_head, conv2d, init_weights, norm2d
@@ -45,10 +46,20 @@ class UpsampleNearest(M.Module):
 
 
 block_dict = {
-    "basic": (partial(ResBasicBlock, stride=1, bot_mul=1, se_r=0, avg_down=False), 1),
+    "basic": (
+        partial(ResBasicBlock, stride=1, bot_mul=1, se_r=0, avg_down=False, drop_path_prob=0.0),
+        1,
+    ),
     "bottleneck": (
         lambda w_out, **kwargs: ResBottleneckBlock(
-            w_out=w_out * 4, stride=1, bot_mul=0.25, group_w=w_out, se_r=0, avg_down=False, **kwargs
+            w_out=w_out * 4,
+            stride=1,
+            bot_mul=0.25,
+            group_w=w_out,
+            se_r=0,
+            avg_down=False,
+            drop_path_prob=0.0,
+            **kwargs,
         ),
         4,
     ),
@@ -481,6 +492,10 @@ def _build_hrnet(**kwargs):
 
 
 @registers.models.register()
+@hub.pretrained(
+    "https://data.megengine.org.cn/research/basecls/models/"
+    "hrnet/hrnet_w18_small_v1/hrnet_w18_small_v1.pkl"
+)
 def hrnet_w18_small_v1(**kwargs):
     model_args = dict(
         stage_modules=[1, 1, 1, 1],
@@ -492,6 +507,10 @@ def hrnet_w18_small_v1(**kwargs):
 
 
 @registers.models.register()
+@hub.pretrained(
+    "https://data.megengine.org.cn/research/basecls/models/"
+    "hrnet/hrnet_w18_small_v2/hrnet_w18_small_v2.pkl"
+)
 def hrnet_w18_small_v2(**kwargs):
     model_args = dict(
         stage_modules=[1, 1, 3, 2],
@@ -503,6 +522,9 @@ def hrnet_w18_small_v2(**kwargs):
 
 
 @registers.models.register()
+@hub.pretrained(
+    "https://data.megengine.org.cn/research/basecls/models/hrnet/hrnet_w18/hrnet_w18.pkl"
+)
 def hrnet_w18(**kwargs):
     model_args = dict(
         stage_channels=[[64], [18, 36], [18, 36, 72], [18, 36, 72, 144]],
@@ -512,6 +534,9 @@ def hrnet_w18(**kwargs):
 
 
 @registers.models.register()
+@hub.pretrained(
+    "https://data.megengine.org.cn/research/basecls/models/hrnet/hrnet_w30/hrnet_w30.pkl"
+)
 def hrnet_w30(**kwargs):
     model_args = dict(
         stage_channels=[[64], [30, 60], [30, 60, 120], [30, 60, 120, 240]],
@@ -521,6 +546,9 @@ def hrnet_w30(**kwargs):
 
 
 @registers.models.register()
+@hub.pretrained(
+    "https://data.megengine.org.cn/research/basecls/models/hrnet/hrnet_w32/hrnet_w32.pkl"
+)
 def hrnet_w32(**kwargs):
     model_args = dict(
         stage_channels=[[64], [32, 64], [32, 64, 128], [32, 64, 128, 256]],
@@ -530,6 +558,9 @@ def hrnet_w32(**kwargs):
 
 
 @registers.models.register()
+@hub.pretrained(
+    "https://data.megengine.org.cn/research/basecls/models/hrnet/hrnet_w40/hrnet_w40.pkl"
+)
 def hrnet_w40(**kwargs):
     model_args = dict(
         stage_channels=[[64], [40, 80], [40, 80, 160], [40, 80, 160, 320]],
@@ -539,6 +570,9 @@ def hrnet_w40(**kwargs):
 
 
 @registers.models.register()
+@hub.pretrained(
+    "https://data.megengine.org.cn/research/basecls/models/hrnet/hrnet_w44/hrnet_w44.pkl"
+)
 def hrnet_w44(**kwargs):
     model_args = dict(
         stage_channels=[[64], [44, 88], [44, 88, 176], [44, 88, 176, 352]],
@@ -548,6 +582,9 @@ def hrnet_w44(**kwargs):
 
 
 @registers.models.register()
+@hub.pretrained(
+    "https://data.megengine.org.cn/research/basecls/models/hrnet/hrnet_w48/hrnet_w48.pkl"
+)
 def hrnet_w48(**kwargs):
     model_args = dict(
         stage_channels=[[64], [48, 96], [48, 96, 192], [48, 96, 192, 384]],
@@ -557,6 +594,9 @@ def hrnet_w48(**kwargs):
 
 
 @registers.models.register()
+@hub.pretrained(
+    "https://data.megengine.org.cn/research/basecls/models/hrnet/hrnet_w64/hrnet_w64.pkl"
+)
 def hrnet_w64(**kwargs):
     model_args = dict(
         stage_channels=[[64], [64, 128], [64, 128, 256], [64, 128, 256, 512]],

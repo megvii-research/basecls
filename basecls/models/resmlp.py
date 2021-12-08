@@ -9,6 +9,7 @@ ResMLP: `"ResMLP: Feedforward networks for image classification with data-effici
 """
 import megengine as mge
 import megengine.functional as F
+import megengine.hub as hub
 import megengine.module as M
 
 from basecls.layers import DropPath, init_vit_weights
@@ -59,7 +60,7 @@ class ResMLPBlock(M.Module):
         self.attn = M.Linear(num_patches, num_patches)
         self.drop_path = DropPath(drop_path) if drop_path > 0.0 else None
         self.norm2 = Affine(dim)
-        self.mlp = FFN(
+        self.ffn = FFN(
             in_features=dim, hidden_features=int(ffn_ratio * dim), act_name=act_name, drop=drop
         )
         self.gamma1 = mge.Parameter(init_scale * F.ones((dim)))
@@ -70,10 +71,10 @@ class ResMLPBlock(M.Module):
             x = x + self.drop_path(
                 self.gamma1 * self.attn(self.norm1(x).transpose(0, 2, 1)).transpose(0, 2, 1)
             )
-            x = x + self.drop_path(self.gamma2 * self.mlp(self.norm2(x)))
+            x = x + self.drop_path(self.gamma2 * self.ffn(self.norm2(x)))
         else:
             x = x + self.gamma1 * self.attn(self.norm1(x).transpose(0, 2, 1)).transpose(0, 2, 1)
-            x = x + self.gamma2 * self.mlp(self.norm2(x))
+            x = x + self.gamma2 * self.ffn(self.norm2(x))
         return x
 
 
@@ -156,6 +157,9 @@ def _build_resmlp(**kwargs):
 
 
 @registers.models.register()
+@hub.pretrained(
+    "https://data.megengine.org.cn/research/basecls/models/resmlp/resmlp_s12/resmlp_s12.pkl"
+)
 def resmlp_s12(**kwargs):
     model_args = dict(depth=12, init_scale=0.1)
     recursive_update(model_args, kwargs)
@@ -163,6 +167,9 @@ def resmlp_s12(**kwargs):
 
 
 @registers.models.register()
+@hub.pretrained(
+    "https://data.megengine.org.cn/research/basecls/models/resmlp/resmlp_s24/resmlp_s24.pkl"
+)
 def resmlp_s24(**kwargs):
     model_args = dict(depth=24, init_scale=1e-5)
     recursive_update(model_args, kwargs)
@@ -170,6 +177,9 @@ def resmlp_s24(**kwargs):
 
 
 @registers.models.register()
+@hub.pretrained(
+    "https://data.megengine.org.cn/research/basecls/models/resmlp/resmlp_s36/resmlp_s36.pkl"
+)
 def resmlp_s36(**kwargs):
     model_args = dict(depth=36, init_scale=1e-6)
     recursive_update(model_args, kwargs)
@@ -177,6 +187,9 @@ def resmlp_s36(**kwargs):
 
 
 @registers.models.register()
+@hub.pretrained(
+    "https://data.megengine.org.cn/research/basecls/models/resmlp/resmlp_b24/resmlp_b24.pkl"
+)
 def resmlp_b24(**kwargs):
     model_args = dict(patch_size=8, embed_dim=768, depth=24, init_scale=1e-6)
     recursive_update(model_args, kwargs)

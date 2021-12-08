@@ -8,6 +8,7 @@ ShufflenetV2: `"ShuffleNet V2: Practical Guidelines for Efficient CNN Architectu
 from typing import Any, Callable, Mapping, Sequence
 
 import megengine.functional as F
+import megengine.hub as hub
 import megengine.module as M
 
 from basecls.layers import SE, DropPath, activation, conv2d, norm2d
@@ -334,6 +335,9 @@ def _build_snetv2_plus(**kwargs):
 
 
 @registers.models.register()
+@hub.pretrained(
+    "https://data.megengine.org.cn/research/basecls/models/snet/snetv2_x050/snetv2_x050.pkl"
+)
 def snetv2_x050(**kwargs):
     model_args = dict(widths=[48, 96, 192])
     recursive_update(model_args, kwargs)
@@ -341,6 +345,9 @@ def snetv2_x050(**kwargs):
 
 
 @registers.models.register()
+@hub.pretrained(
+    "https://data.megengine.org.cn/research/basecls/models/snet/snetv2_x100/snetv2_x100.pkl"
+)
 def snetv2_x100(**kwargs):
     model_args = dict(widths=[116, 232, 464])
     recursive_update(model_args, kwargs)
@@ -348,6 +355,9 @@ def snetv2_x100(**kwargs):
 
 
 @registers.models.register()
+@hub.pretrained(
+    "https://data.megengine.org.cn/research/basecls/models/snet/snetv2_x150/snetv2_x150.pkl"
+)
 def snetv2_x150(**kwargs):
     model_args = dict(widths=[176, 352, 704])
     recursive_update(model_args, kwargs)
@@ -355,6 +365,9 @@ def snetv2_x150(**kwargs):
 
 
 @registers.models.register()
+@hub.pretrained(
+    "https://data.megengine.org.cn/research/basecls/models/snet/snetv2_x200/snetv2_x200.pkl"
+)
 def snetv2_x200(**kwargs):
     model_args = dict(widths=[244, 488, 976], head=dict(dropout_prob=0.2, width=2048))
     recursive_update(model_args, kwargs)
@@ -362,6 +375,9 @@ def snetv2_x200(**kwargs):
 
 
 @registers.models.register()
+@hub.pretrained(
+    "https://data.megengine.org.cn/research/basecls/models/snet/snetv2p_x075/snetv2p_x075.pkl"
+)
 def snetv2p_x075(**kwargs):
     model_args = dict(widths=[36, 104, 208, 416])
     recursive_update(model_args, kwargs)
@@ -369,6 +385,9 @@ def snetv2p_x075(**kwargs):
 
 
 @registers.models.register()
+@hub.pretrained(
+    "https://data.megengine.org.cn/research/basecls/models/snet/snetv2p_x100/snetv2p_x100.pkl"
+)
 def snetv2p_x100(**kwargs):
     model_args = dict(widths=[48, 128, 256, 512])
     recursive_update(model_args, kwargs)
@@ -376,6 +395,9 @@ def snetv2p_x100(**kwargs):
 
 
 @registers.models.register()
+@hub.pretrained(
+    "https://data.megengine.org.cn/research/basecls/models/snet/snetv2p_x125/snetv2p_x125.pkl"
+)
 def snetv2p_x125(**kwargs):
     model_args = dict(widths=[68, 168, 336, 672])
     recursive_update(model_args, kwargs)

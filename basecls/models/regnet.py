@@ -6,6 +6,7 @@ RegNet X/Y: `"Designing Network Design Spaces" <https://arxiv.org/abs/2003.13678
 """
 from typing import Any, Callable, Mapping, Tuple, Union
 
+import megengine.hub as hub
 import megengine.module as M
 import numpy as np
 
@@ -109,6 +110,7 @@ class RegNet(ResNet):
         bot_mul: bottleneck multiplier for each stage (applies to bottleneck block).
             Default: ``1.0``
         se_r: Squeeze-and-Excitation (SE) ratio. Default: ``0.0``
+        drop_path_prob: drop path probability. Default: ``0.0``
         zero_init_final_gamma: enable zero-initialize or not. Default: ``False``
         norm_name: normalization function. Default: ``"BN"``
         act_name: activation function. Default: ``"relu"``
@@ -128,6 +130,7 @@ class RegNet(ResNet):
         stride: int = 2,
         bot_mul: float = 1.0,
         se_r: float = 0.0,
+        drop_path_prob: float = 0.0,
         zero_init_final_gamma: bool = False,
         norm_name: str = "BN",
         act_name: str = "relu",
@@ -151,6 +154,7 @@ class RegNet(ResNet):
             group_ws,
             se_r,
             False,
+            drop_path_prob,
             zero_init_final_gamma,
             norm_name,
             act_name,
@@ -176,6 +180,9 @@ def _build_regnety(**kwargs):
 
 
 @registers.models.register()
+@hub.pretrained(
+    "https://data.megengine.org.cn/research/basecls/models/regnet/regnetx_002/regnetx_002.pkl"
+)
 def regnetx_002(**kwargs):
     model_args = dict(depth=13, w0=24, wa=36.44, wm=2.49, group_w=8)
     recursive_update(model_args, kwargs)
@@ -183,6 +190,9 @@ def regnetx_002(**kwargs):
 
 
 @registers.models.register()
+@hub.pretrained(
+    "https://data.megengine.org.cn/research/basecls/models/regnet/regnetx_004/regnetx_004.pkl"
+)
 def regnetx_004(**kwargs):
     model_args = dict(depth=22, w0=24, wa=24.48, wm=2.54, group_w=16)
     recursive_update(model_args, kwargs)
@@ -190,6 +200,9 @@ def regnetx_004(**kwargs):
 
 
 @registers.models.register()
+@hub.pretrained(
+    "https://data.megengine.org.cn/research/basecls/models/regnet/regnetx_006/regnetx_006.pkl"
+)
 def regnetx_006(**kwargs):
     model_args = dict(depth=16, w0=48, wa=36.97, wm=2.24, group_w=24)
     recursive_update(model_args, kwargs)
@@ -197,6 +210,9 @@ def regnetx_006(**kwargs):
 
 
 @registers.models.register()
+@hub.pretrained(
+    "https://data.megengine.org.cn/research/basecls/models/regnet/regnetx_008/regnetx_008.pkl"
+)
 def regnetx_008(**kwargs):
     model_args = dict(depth=16, w0=56, wa=35.73, wm=2.28, group_w=16)
     recursive_update(model_args, kwargs)
@@ -204,6 +220,9 @@ def regnetx_008(**kwargs):
 
 
 @registers.models.register()
+@hub.pretrained(
+    "https://data.megengine.org.cn/research/basecls/models/regnet/regnetx_016/regnetx_016.pkl"
+)
 def regnetx_016(**kwargs):
     model_args = dict(depth=18, w0=80, wa=34.01, wm=2.25, group_w=24)
     recursive_update(model_args, kwargs)
@@ -211,6 +230,9 @@ def regnetx_016(**kwargs):
 
 
 @registers.models.register()
+@hub.pretrained(
+    "https://data.megengine.org.cn/research/basecls/models/regnet/regnetx_032/regnetx_032.pkl"
+)
 def regnetx_032(**kwargs):
     model_args = dict(depth=25, w0=88, wa=26.31, wm=2.25, group_w=48)
     recursive_update(model_args, kwargs)
@@ -218,6 +240,9 @@ def regnetx_032(**kwargs):
 
 
 @registers.models.register()
+@hub.pretrained(
+    "https://data.megengine.org.cn/research/basecls/models/regnet/regnetx_040/regnetx_040.pkl"
+)
 def regnetx_040(**kwargs):
     model_args = dict(depth=23, w0=96, wa=38.65, wm=2.43, group_w=40)
     recursive_update(model_args, kwargs)
@@ -225,6 +250,9 @@ def regnetx_040(**kwargs):
 
 
 @registers.models.register()
+@hub.pretrained(
+    "https://data.megengine.org.cn/research/basecls/models/regnet/regnetx_064/regnetx_064.pkl"
+)
 def regnetx_064(**kwargs):
     model_args = dict(depth=17, w0=184, wa=60.83, wm=2.07, group_w=56)
     recursive_update(model_args, kwargs)
@@ -232,6 +260,9 @@ def regnetx_064(**kwargs):
 
 
 @registers.models.register()
+@hub.pretrained(
+    "https://data.megengine.org.cn/research/basecls/models/regnet/regnetx_080/regnetx_080.pkl"
+)
 def regnetx_080(**kwargs):
     model_args = dict(depth=23, w0=80, wa=49.56, wm=2.88, group_w=120)
     recursive_update(model_args, kwargs)
@@ -239,6 +270,9 @@ def regnetx_080(**kwargs):
 
 
 @registers.models.register()
+@hub.pretrained(
+    "https://data.megengine.org.cn/research/basecls/models/regnet/regnetx_120/regnetx_120.pkl"
+)
 def regnetx_120(**kwargs):
     model_args = dict(depth=19, w0=168, wa=73.36, wm=2.37, group_w=112)
     recursive_update(model_args, kwargs)
@@ -246,6 +280,9 @@ def regnetx_120(**kwargs):
 
 
 @registers.models.register()
+@hub.pretrained(
+    "https://data.megengine.org.cn/research/basecls/models/regnet/regnetx_160/regnetx_160.pkl"
+)
 def regnetx_160(**kwargs):
     model_args = dict(depth=22, w0=216, wa=55.59, wm=2.1, group_w=128)
     recursive_update(model_args, kwargs)
@@ -253,6 +290,9 @@ def regnetx_160(**kwargs):
 
 
 @registers.models.register()
+@hub.pretrained(
+    "https://data.megengine.org.cn/research/basecls/models/regnet/regnetx_320/regnetx_320.pkl"
+)
 def regnetx_320(**kwargs):
     model_args = dict(depth=23, w0=320, wa=69.86, wm=2.0, group_w=168)
     recursive_update(model_args, kwargs)
@@ -260,6 +300,9 @@ def regnetx_320(**kwargs):
 
 
 @registers.models.register()
+@hub.pretrained(
+    "https://data.megengine.org.cn/research/basecls/models/regnet/regnety_002/regnety_002.pkl"
+)
 def regnety_002(**kwargs):
     model_args = dict(depth=13, w0=24, wa=36.44, wm=2.49, group_w=8)
     recursive_update(model_args, kwargs)
@@ -267,6 +310,9 @@ def regnety_002(**kwargs):
 
 
 @registers.models.register()
+@hub.pretrained(
+    "https://data.megengine.org.cn/research/basecls/models/regnet/regnety_004/regnety_004.pkl"
+)
 def regnety_004(**kwargs):
     model_args = dict(depth=16, w0=48, wa=27.89, wm=2.09, group_w=8)
     recursive_update(model_args, kwargs)
@@ -274,6 +320,9 @@ def regnety_004(**kwargs):
 
 
 @registers.models.register()
+@hub.pretrained(
+    "https://data.megengine.org.cn/research/basecls/models/regnet/regnety_006/regnety_006.pkl"
+)
 def regnety_006(**kwargs):
     model_args = dict(depth=15, w0=48, wa=32.54, wm=2.32, group_w=16)
     recursive_update(model_args, kwargs)
@@ -281,6 +330,9 @@ def regnety_006(**kwargs):
 
 
 @registers.models.register()
+@hub.pretrained(
+    "https://data.megengine.org.cn/research/basecls/models/regnet/regnety_008/regnety_008.pkl"
+)
 def regnety_008(**kwargs):
     model_args = dict(depth=14, w0=56, wa=38.84, wm=2.4, group_w=16)
     recursive_update(model_args, kwargs)
@@ -288,6 +340,9 @@ def regnety_008(**kwargs):
 
 
 @registers.models.register()
+@hub.pretrained(
+    "https://data.megengine.org.cn/research/basecls/models/regnet/regnety_016/regnety_016.pkl"
+)
 def regnety_016(**kwargs):
     model_args = dict(depth=27, w0=48, wa=20.71, wm=2.65, group_w=24)
     recursive_update(model_args, kwargs)
@@ -295,6 +350,9 @@ def regnety_016(**kwargs):
 
 
 @registers.models.register()
+@hub.pretrained(
+    "https://data.megengine.org.cn/research/basecls/models/regnet/regnety_032/regnety_032.pkl"
+)
 def regnety_032(**kwargs):
     model_args = dict(depth=21, w0=80, wa=42.63, wm=2.66, group_w=24)
     recursive_update(model_args, kwargs)
@@ -302,6 +360,9 @@ def regnety_032(**kwargs):
 
 
 @registers.models.register()
+@hub.pretrained(
+    "https://data.megengine.org.cn/research/basecls/models/regnet/regnety_040/regnety_040.pkl"
+)
 def regnety_040(**kwargs):
     model_args = dict(depth=22, w0=96, wa=31.41, wm=2.24, group_w=64)
     recursive_update(model_args, kwargs)
@@ -309,6 +370,9 @@ def regnety_040(**kwargs):
 
 
 @registers.models.register()
+@hub.pretrained(
+    "https://data.megengine.org.cn/research/basecls/models/regnet/regnety_064/regnety_064.pkl"
+)
 def regnety_064(**kwargs):
     model_args = dict(depth=25, w0=112, wa=33.22, wm=2.27, group_w=72)
     recursive_update(model_args, kwargs)
@@ -316,6 +380,9 @@ def regnety_064(**kwargs):
 
 
 @registers.models.register()
+@hub.pretrained(
+    "https://data.megengine.org.cn/research/basecls/models/regnet/regnety_080/regnety_080.pkl"
+)
 def regnety_080(**kwargs):
     model_args = dict(depth=17, w0=192, wa=76.82, wm=2.19, group_w=56)
     recursive_update(model_args, kwargs)
@@ -323,6 +390,9 @@ def regnety_080(**kwargs):
 
 
 @registers.models.register()
+@hub.pretrained(
+    "https://data.megengine.org.cn/research/basecls/models/regnet/regnety_120/regnety_120.pkl"
+)
 def regnety_120(**kwargs):
     model_args = dict(depth=19, w0=168, wa=73.36, wm=2.37, group_w=112)
     recursive_update(model_args, kwargs)
@@ -330,6 +400,9 @@ def regnety_120(**kwargs):
 
 
 @registers.models.register()
+@hub.pretrained(
+    "https://data.megengine.org.cn/research/basecls/models/regnet/regnety_160/regnety_160.pkl"
+)
 def regnety_160(**kwargs):
     model_args = dict(depth=18, w0=200, wa=106.23, wm=2.48, group_w=112)
     recursive_update(model_args, kwargs)
@@ -337,6 +410,9 @@ def regnety_160(**kwargs):
 
 
 @registers.models.register()
+@hub.pretrained(
+    "https://data.megengine.org.cn/research/basecls/models/regnet/regnety_320/regnety_320.pkl"
+)
 def regnety_320(**kwargs):
     model_args = dict(depth=20, w0=232, wa=115.89, wm=2.53, group_w=232)
     recursive_update(model_args, kwargs)
