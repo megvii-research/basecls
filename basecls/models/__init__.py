@@ -9,6 +9,7 @@ from .repvgg import RepVGG
 from .resmlp import ResMLP
 from .resnet import ResNet
 from .snet import SNetV2
+from .swin import SwinTransformer
 from .vgg import VGG
 from .vit import ViT
 

@@ -1,14 +1,23 @@
 #!/usr/bin/env python3
-# Copyright (c) 2014-2021 Megvii Inc. All rights reserved.
+# Copyright (c) Facebook, Inc. and its affiliates.
+# Copyright (c) 2020 Ross Wightman
+# This file has been modified by Megvii ("Megvii Modifications").
+# All Megvii Modifications are Copyright (c) 2014-2021 Megvii Inc. All rights reserved.
 """EfficientNet Series
 
 EfficientNet: `"EfficientNet: Rethinking Model Scaling for Convolutional Neural Networks"
 <https://arxiv.org/abs/1905.11946>`_
+
+References:
+    https://github.com/facebookresearch/pycls/blob/main/pycls/models/effnet.py
+    https://github.com/rwightman/pytorch-image-models/blob/master/timm/models/efficientnet.py
+    https://github.com/rwightman/pytorch-image-models/blob/master/timm/models/mobilenetv3.py
 """
 import math
 from numbers import Real
 from typing import Any, Callable, Mapping, Sequence, Union
 
+import megengine.hub as hub
 import megengine.module as M
 
 from basecls.layers import (
@@ -24,9 +33,9 @@ from basecls.layers import (
 from basecls.utils import recursive_update, registers
 
 from .mbnet import MBConv
-from .resnet import SimpleStem
+from .resnet import AnyStage, SimpleStem
 
-__all__ = ["FuseMBConv", "EffStage", "EffNet"]
+__all__ = ["FuseMBConv", "EffNet"]
 
 
 class FuseMBConv(M.Module):
@@ -103,36 +112,6 @@ class FuseMBConv(M.Module):
         return x
 
 
-class EffStage(M.Module):
-    """EffNet stage (sequence of blocks w/ the same output shape)."""
-
-    def __init__(
-        self,
-        w_in: int,
-        w_out: int,
-        stride: int,
-        depth: int,
-        block_func: Callable,
-        drop_path_prob: Sequence[float],
-        **kwargs,
-    ):
-        super().__init__()
-        self.depth = depth
-        for i in range(depth):
-            block = block_func(w_in, w_out, stride, drop_path_prob=drop_path_prob[i], **kwargs)
-            setattr(self, f"b{i + 1}", block)
-            stride, w_in = 1, w_out
-
-    def __len__(self):
-        return self.depth
-
-    def forward(self, x):
-        for i in range(self.depth):
-            block = getattr(self, f"b{i + 1}")
-            x = block(x)
-        return x
-
-
 @registers.models.register()
 class EffNet(M.Module):
     """EfficientNet model.
@@ -197,7 +176,7 @@ class EffNet(M.Module):
         model_args = [depths, widths, strides, block_func, kernels, exp_rs, se_rs, drop_path_probs]
         prev_w = stem_w
         for i, (d, w, s, bf, k, exp_r, se_r, dp_p) in enumerate(zip(*model_args)):
-            stage = EffStage(
+            stage = AnyStage(
                 prev_w,
                 w,
                 s,
@@ -289,6 +268,9 @@ def _build_effnetv2(**kwargs):
 
 
 @registers.models.register()
+@hub.pretrained(
+    "https://data.megengine.org.cn/research/basecls/models/effnet/effnet_b0/effnet_b0.pkl"
+)
 def effnet_b0(**kwargs):
     model_args = dict(depth_mult=1.0, width_mult=1.0)
     recursive_update(model_args, kwargs)
@@ -296,6 +278,9 @@ def effnet_b0(**kwargs):
 
 
 @registers.models.register()
+@hub.pretrained(
+    "https://data.megengine.org.cn/research/basecls/models/effnet/effnet_b1/effnet_b1.pkl"
+)
 def effnet_b1(**kwargs):
     model_args = dict(depth_mult=1.1, width_mult=1.0)
     recursive_update(model_args, kwargs)
@@ -303,6 +288,9 @@ def effnet_b1(**kwargs):
 
 
 @registers.models.register()
+@hub.pretrained(
+    "https://data.megengine.org.cn/research/basecls/models/effnet/effnet_b2/effnet_b2.pkl"
+)
 def effnet_b2(**kwargs):
     model_args = dict(depth_mult=1.2, width_mult=1.1, head=dict(dropout_prob=0.3))
     recursive_update(model_args, kwargs)
@@ -310,6 +298,9 @@ def effnet_b2(**kwargs):
 
 
 @registers.models.register()
+@hub.pretrained(
+    "https://data.megengine.org.cn/research/basecls/models/effnet/effnet_b3/effnet_b3.pkl"
+)
 def effnet_b3(**kwargs):
     model_args = dict(depth_mult=1.4, width_mult=1.2, head=dict(dropout_prob=0.3))
     recursive_update(model_args, kwargs)
@@ -317,6 +308,9 @@ def effnet_b3(**kwargs):
 
 
 @registers.models.register()
+@hub.pretrained(
+    "https://data.megengine.org.cn/research/basecls/models/effnet/effnet_b4/effnet_b4.pkl"
+)
 def effnet_b4(**kwargs):
     model_args = dict(depth_mult=1.8, width_mult=1.4, head=dict(dropout_prob=0.4))
     recursive_update(model_args, kwargs)
@@ -324,6 +318,9 @@ def effnet_b4(**kwargs):
 
 
 @registers.models.register()
+@hub.pretrained(
+    "https://data.megengine.org.cn/research/basecls/models/effnet/effnet_b5/effnet_b5.pkl"
+)
 def effnet_b5(**kwargs):
     model_args = dict(depth_mult=2.2, width_mult=1.6, head=dict(dropout_prob=0.4))
     recursive_update(model_args, kwargs)
@@ -331,6 +328,9 @@ def effnet_b5(**kwargs):
 
 
 @registers.models.register()
+@hub.pretrained(
+    "https://data.megengine.org.cn/research/basecls/models/effnet/effnet_b6/effnet_b6.pkl"
+)
 def effnet_b6(**kwargs):
     model_args = dict(depth_mult=2.6, width_mult=1.8, head=dict(dropout_prob=0.5))
     recursive_update(model_args, kwargs)
@@ -338,6 +338,9 @@ def effnet_b6(**kwargs):
 
 
 @registers.models.register()
+@hub.pretrained(
+    "https://data.megengine.org.cn/research/basecls/models/effnet/effnet_b7/effnet_b7.pkl"
+)
 def effnet_b7(**kwargs):
     model_args = dict(depth_mult=3.1, width_mult=2.0, head=dict(dropout_prob=0.5))
     recursive_update(model_args, kwargs)
@@ -345,6 +348,9 @@ def effnet_b7(**kwargs):
 
 
 @registers.models.register()
+@hub.pretrained(
+    "https://data.megengine.org.cn/research/basecls/models/effnet/effnet_b8/effnet_b8.pkl"
+)
 def effnet_b8(**kwargs):
     model_args = dict(depth_mult=3.6, width_mult=2.2, head=dict(dropout_prob=0.5))
     recursive_update(model_args, kwargs)
@@ -352,6 +358,9 @@ def effnet_b8(**kwargs):
 
 
 @registers.models.register()
+@hub.pretrained(
+    "https://data.megengine.org.cn/research/basecls/models/effnet/effnet_l2/effnet_l2.pkl"
+)
 def effnet_l2(**kwargs):
     model_args = dict(depth_mult=5.3, width_mult=4.3, head=dict(dropout_prob=0.5))
     recursive_update(model_args, kwargs)
@@ -359,6 +368,9 @@ def effnet_l2(**kwargs):
 
 
 @registers.models.register()
+@hub.pretrained(
+    "https://data.megengine.org.cn/research/basecls/models/effnet/effnet_b0_lite/effnet_b0_lite.pkl"
+)
 def effnet_b0_lite(**kwargs):
     model_args = dict(depth_mult=1.0, width_mult=1.0)
     recursive_update(model_args, kwargs)
@@ -366,6 +378,9 @@ def effnet_b0_lite(**kwargs):
 
 
 @registers.models.register()
+@hub.pretrained(
+    "https://data.megengine.org.cn/research/basecls/models/effnet/effnet_b1_lite/effnet_b1_lite.pkl"
+)
 def effnet_b1_lite(**kwargs):
     model_args = dict(depth_mult=1.1, width_mult=1.0)
     recursive_update(model_args, kwargs)
@@ -373,6 +388,9 @@ def effnet_b1_lite(**kwargs):
 
 
 @registers.models.register()
+@hub.pretrained(
+    "https://data.megengine.org.cn/research/basecls/models/effnet/effnet_b2_lite/effnet_b2_lite.pkl"
+)
 def effnet_b2_lite(**kwargs):
     model_args = dict(depth_mult=1.2, width_mult=1.1, head=dict(dropout_prob=0.3))
     recursive_update(model_args, kwargs)
@@ -380,6 +398,9 @@ def effnet_b2_lite(**kwargs):
 
 
 @registers.models.register()
+@hub.pretrained(
+    "https://data.megengine.org.cn/research/basecls/models/effnet/effnet_b3_lite/effnet_b3_lite.pkl"
+)
 def effnet_b3_lite(**kwargs):
     model_args = dict(depth_mult=1.4, width_mult=1.2, head=dict(dropout_prob=0.3))
     recursive_update(model_args, kwargs)
@@ -387,6 +408,9 @@ def effnet_b3_lite(**kwargs):
 
 
 @registers.models.register()
+@hub.pretrained(
+    "https://data.megengine.org.cn/research/basecls/models/effnet/effnet_b4_lite/effnet_b4_lite.pkl"
+)
 def effnet_b4_lite(**kwargs):
     model_args = dict(depth_mult=1.8, width_mult=1.4, head=dict(dropout_prob=0.3))
     recursive_update(model_args, kwargs)
@@ -394,6 +418,49 @@ def effnet_b4_lite(**kwargs):
 
 
 @registers.models.register()
+@hub.pretrained(
+    "https://data.megengine.org.cn/research/basecls/models/effnet/effnetv2_b0/effnetv2_b0.pkl"
+)
+def effnetv2_b0(**kwargs):
+    model_args = dict(depth_mult=1.0, width_mult=1.0)
+    recursive_update(model_args, kwargs)
+    return _build_effnetv2(**model_args)
+
+
+@registers.models.register()
+@hub.pretrained(
+    "https://data.megengine.org.cn/research/basecls/models/effnet/effnetv2_b1/effnetv2_b1.pkl"
+)
+def effnetv2_b1(**kwargs):
+    model_args = dict(depth_mult=1.1, width_mult=1.0)
+    recursive_update(model_args, kwargs)
+    return _build_effnetv2(**model_args)
+
+
+@registers.models.register()
+@hub.pretrained(
+    "https://data.megengine.org.cn/research/basecls/models/effnet/effnetv2_b2/effnetv2_b2.pkl"
+)
+def effnetv2_b2(**kwargs):
+    model_args = dict(depth_mult=1.2, width_mult=1.1, head=dict(dropout_prob=0.3))
+    recursive_update(model_args, kwargs)
+    return _build_effnetv2(**model_args)
+
+
+@registers.models.register()
+@hub.pretrained(
+    "https://data.megengine.org.cn/research/basecls/models/effnet/effnetv2_b3/effnetv2_b3.pkl"
+)
+def effnetv2_b3(**kwargs):
+    model_args = dict(depth_mult=1.4, width_mult=1.2, head=dict(dropout_prob=0.3))
+    recursive_update(model_args, kwargs)
+    return _build_effnetv2(**model_args)
+
+
+@registers.models.register()
+@hub.pretrained(
+    "https://data.megengine.org.cn/research/basecls/models/effnet/effnetv2_s/effnetv2_s.pkl"
+)
 def effnetv2_s(**kwargs):
     model_args = dict(stem_w=24, depths=[2, 4, 4, 6, 9, 15], widths=[24, 48, 64, 128, 160, 256])
     recursive_update(model_args, kwargs)
@@ -401,6 +468,9 @@ def effnetv2_s(**kwargs):
 
 
 @registers.models.register()
+@hub.pretrained(
+    "https://data.megengine.org.cn/research/basecls/models/effnet/effnetv2_m/effnetv2_m.pkl"
+)
 def effnetv2_m(**kwargs):
     model_args = dict(
         stem_w=24,
@@ -418,6 +488,9 @@ def effnetv2_m(**kwargs):
 
 
 @registers.models.register()
+@hub.pretrained(
+    "https://data.megengine.org.cn/research/basecls/models/effnet/effnetv2_l/effnetv2_l.pkl"
+)
 def effnetv2_l(**kwargs):
     model_args = dict(
         stem_w=32,
@@ -430,33 +503,5 @@ def effnetv2_l(**kwargs):
         se_rs=[0, 0, 0, 0.25, 0.25, 0.25, 0.25],
         head=dict(dropout_prob=0.4),
     )
-    recursive_update(model_args, kwargs)
-    return _build_effnetv2(**model_args)
-
-
-@registers.models.register()
-def effnetv2_b0(**kwargs):
-    model_args = dict(depth_mult=1.0, width_mult=1.0)
-    recursive_update(model_args, kwargs)
-    return _build_effnetv2(**model_args)
-
-
-@registers.models.register()
-def effnetv2_b1(**kwargs):
-    model_args = dict(depth_mult=1.1, width_mult=1.0)
-    recursive_update(model_args, kwargs)
-    return _build_effnetv2(**model_args)
-
-
-@registers.models.register()
-def effnetv2_b2(**kwargs):
-    model_args = dict(depth_mult=1.2, width_mult=1.1, head=dict(dropout_prob=0.3))
-    recursive_update(model_args, kwargs)
-    return _build_effnetv2(**model_args)
-
-
-@registers.models.register()
-def effnetv2_b3(**kwargs):
-    model_args = dict(depth_mult=1.4, width_mult=1.2, head=dict(dropout_prob=0.3))
     recursive_update(model_args, kwargs)
     return _build_effnetv2(**model_args)

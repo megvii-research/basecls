@@ -8,6 +8,7 @@ VGG: `"Very Deep Convolutional Networks for Large-Scale Image Recognition"
 from typing import Any, Mapping, Sequence
 
 import megengine as mge
+import megengine.hub as hub
 import megengine.module as M
 
 from basecls.layers import activation, build_head, conv2d, init_weights, norm2d
@@ -91,6 +92,7 @@ def _build_vgg(**kwargs):
 
 
 @registers.models.register()
+@hub.pretrained("https://data.megengine.org.cn/research/basecls/models/vgg/vgg11/vgg11.pkl")
 def vgg11(**kwargs):
     model_args = dict(depths=[1, 1, 2, 2, 2], widths=[64, 128, 256, 512, 512])
     recursive_update(model_args, kwargs)
@@ -98,6 +100,7 @@ def vgg11(**kwargs):
 
 
 @registers.models.register()
+@hub.pretrained("https://data.megengine.org.cn/research/basecls/models/vgg/vgg11_bn/vgg11_bn.pkl")
 def vgg11_bn(**kwargs):
     model_args = dict(norm_name="BN")
     recursive_update(model_args, kwargs)
@@ -105,6 +108,7 @@ def vgg11_bn(**kwargs):
 
 
 @registers.models.register()
+@hub.pretrained("https://data.megengine.org.cn/research/basecls/models/vgg/vgg13/vgg13.pkl")
 def vgg13(**kwargs):
     model_args = dict(depths=[2, 2, 2, 2, 2], widths=[64, 128, 256, 512, 512])
     recursive_update(model_args, kwargs)
@@ -112,6 +116,7 @@ def vgg13(**kwargs):
 
 
 @registers.models.register()
+@hub.pretrained("https://data.megengine.org.cn/research/basecls/models/vgg/vgg13_bn/vgg13_bn.pkl")
 def vgg13_bn(**kwargs):
     model_args = dict(norm_name="BN")
     recursive_update(model_args, kwargs)
@@ -119,6 +124,7 @@ def vgg13_bn(**kwargs):
 
 
 @registers.models.register()
+@hub.pretrained("https://data.megengine.org.cn/research/basecls/models/vgg/vgg16/vgg16.pkl")
 def vgg16(**kwargs):
     model_args = dict(depths=[2, 2, 3, 3, 3], widths=[64, 128, 256, 512, 512])
     recursive_update(model_args, kwargs)
@@ -126,6 +132,7 @@ def vgg16(**kwargs):
 
 
 @registers.models.register()
+@hub.pretrained("https://data.megengine.org.cn/research/basecls/models/vgg/vgg16_bn/vgg16_bn.pkl")
 def vgg16_bn(**kwargs):
     model_args = dict(norm_name="BN")
     recursive_update(model_args, kwargs)
@@ -133,6 +140,7 @@ def vgg16_bn(**kwargs):
 
 
 @registers.models.register()
+@hub.pretrained("https://data.megengine.org.cn/research/basecls/models/vgg/vgg19/vgg19.pkl")
 def vgg19(**kwargs):
     model_args = dict(depths=[2, 2, 4, 4, 4], widths=[64, 128, 256, 512, 512])
     recursive_update(model_args, kwargs)
@@ -140,6 +148,7 @@ def vgg19(**kwargs):
 
 
 @registers.models.register()
+@hub.pretrained("https://data.megengine.org.cn/research/basecls/models/vgg/vgg19_bn/vgg19_bn.pkl")
 def vgg19_bn(**kwargs):
     model_args = dict(norm_name="BN")
     recursive_update(model_args, kwargs)

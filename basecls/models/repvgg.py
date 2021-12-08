@@ -3,12 +3,16 @@
 """RepVGG Series
 
 RegVGG: `"RepVGG: Making VGG-style ConvNets Great Again" <https://arxiv.org/abs/2101.03697>`_
+
+References:
+    https://github.com/DingXiaoH/RepVGG/blob/main/repvgg.py
 """
 from numbers import Real
 from typing import Any, List, Mapping, Sequence, Union
 
 import megengine
 import megengine.functional as F
+import megengine.hub as hub
 import megengine.module as M
 import numpy as np
 
@@ -243,6 +247,9 @@ class RepVGG(M.Module):
 
 
 @registers.models.register()
+@hub.pretrained(
+    "https://data.megengine.org.cn/research/basecls/models/repvgg/repvgg_a0/repvgg_a0.pkl"
+)
 def repvgg_a0(**kwargs):
     model_args = dict(
         num_blocks=[2, 4, 14, 1],
@@ -254,6 +261,9 @@ def repvgg_a0(**kwargs):
 
 
 @registers.models.register()
+@hub.pretrained(
+    "https://data.megengine.org.cn/research/basecls/models/repvgg/repvgg_a1/repvgg_a1.pkl"
+)
 def repvgg_a1(**kwargs):
     model_args = dict(
         num_blocks=[2, 4, 14, 1],
@@ -265,6 +275,9 @@ def repvgg_a1(**kwargs):
 
 
 @registers.models.register()
+@hub.pretrained(
+    "https://data.megengine.org.cn/research/basecls/models/repvgg/repvgg_a2/repvgg_a2.pkl"
+)
 def repvgg_a2(**kwargs):
     model_args = dict(
         num_blocks=[2, 4, 14, 1],
@@ -276,6 +289,9 @@ def repvgg_a2(**kwargs):
 
 
 @registers.models.register()
+@hub.pretrained(
+    "https://data.megengine.org.cn/research/basecls/models/repvgg/repvgg_b0/repvgg_b0.pkl"
+)
 def repvgg_b0(**kwargs):
     model_args = dict(
         num_blocks=[4, 6, 16, 1],
@@ -287,6 +303,9 @@ def repvgg_b0(**kwargs):
 
 
 @registers.models.register()
+@hub.pretrained(
+    "https://data.megengine.org.cn/research/basecls/models/repvgg/repvgg_b1/repvgg_b1.pkl"
+)
 def repvgg_b1(**kwargs):
     model_args = dict(
         num_blocks=[4, 6, 16, 1],
@@ -298,6 +317,9 @@ def repvgg_b1(**kwargs):
 
 
 @registers.models.register()
+@hub.pretrained(
+    "https://data.megengine.org.cn/research/basecls/models/repvgg/repvgg_b1g2/repvgg_b1g2.pkl"
+)
 def repvgg_b1g2(**kwargs):
     model_args = dict(
         num_blocks=[4, 6, 16, 1],
@@ -315,6 +337,9 @@ def repvgg_b1g2(**kwargs):
 
 
 @registers.models.register()
+@hub.pretrained(
+    "https://data.megengine.org.cn/research/basecls/models/repvgg/repvgg_b1g4/repvgg_b1g4.pkl"
+)
 def repvgg_b1g4(**kwargs):
     model_args = dict(
         num_blocks=[4, 6, 16, 1],
@@ -332,6 +357,9 @@ def repvgg_b1g4(**kwargs):
 
 
 @registers.models.register()
+@hub.pretrained(
+    "https://data.megengine.org.cn/research/basecls/models/repvgg/repvgg_b2/repvgg_b2.pkl"
+)
 def repvgg_b2(**kwargs):
     model_args = dict(
         num_blocks=[4, 6, 16, 1],
@@ -343,6 +371,9 @@ def repvgg_b2(**kwargs):
 
 
 @registers.models.register()
+@hub.pretrained(
+    "https://data.megengine.org.cn/research/basecls/models/repvgg/repvgg_b2g2/repvgg_b2g2.pkl"
+)
 def repvgg_b2g2(**kwargs):
     model_args = dict(
         num_blocks=[4, 6, 16, 1],
@@ -360,6 +391,9 @@ def repvgg_b2g2(**kwargs):
 
 
 @registers.models.register()
+@hub.pretrained(
+    "https://data.megengine.org.cn/research/basecls/models/repvgg/repvgg_b2g4/repvgg_b2g4.pkl"
+)
 def repvgg_b2g4(**kwargs):
     model_args = dict(
         num_blocks=[4, 6, 16, 1],
@@ -377,6 +411,9 @@ def repvgg_b2g4(**kwargs):
 
 
 @registers.models.register()
+@hub.pretrained(
+    "https://data.megengine.org.cn/research/basecls/models/repvgg/repvgg_b3/repvgg_b3.pkl"
+)
 def repvgg_b3(**kwargs):
     model_args = dict(
         num_blocks=[4, 6, 16, 1],
@@ -388,6 +425,9 @@ def repvgg_b3(**kwargs):
 
 
 @registers.models.register()
+@hub.pretrained(
+    "https://data.megengine.org.cn/research/basecls/models/repvgg/repvgg_b3g2/repvgg_b3g2.pkl"
+)
 def repvgg_b3g2(**kwargs):
     model_args = dict(
         num_blocks=[4, 6, 16, 1],
@@ -405,6 +445,9 @@ def repvgg_b3g2(**kwargs):
 
 
 @registers.models.register()
+@hub.pretrained(
+    "https://data.megengine.org.cn/research/basecls/models/repvgg/repvgg_b3g4/repvgg_b3g4.pkl"
+)
 def repvgg_b3g4(**kwargs):
     model_args = dict(
         num_blocks=[4, 6, 16, 1],
@@ -422,6 +465,9 @@ def repvgg_b3g4(**kwargs):
 
 
 @registers.models.register()
+@hub.pretrained(
+    "https://data.megengine.org.cn/research/basecls/models/repvgg/repvgg_d2/repvgg_d2.pkl"
+)
 def repvgg_d2(**kwargs):
     model_args = dict(
         num_blocks=[8, 14, 24, 1],

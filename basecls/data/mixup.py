@@ -183,7 +183,7 @@ class MixupCutmixTransform(T.VisionTransform):
 
     def _params_per_elem(self, batch_size: int):
         lam = np.ones(batch_size, dtype=np.float32)
-        use_cutmix = np.zeros(batch_size, dtype=np.bool)
+        use_cutmix = np.zeros(batch_size, dtype=np.bool_)
         if self.mixup_alpha == 0.0 and self.cutmix_alpha == 0.0:
             return lam, use_cutmix
         if self.mixup_alpha > 0.0 and self.cutmix_alpha > 0.0:
@@ -196,7 +196,7 @@ class MixupCutmixTransform(T.VisionTransform):
         elif self.mixup_alpha > 0.0:
             lam_mix = np.random.beta(self.mixup_alpha, self.mixup_alpha, size=batch_size)
         elif self.cutmix_alpha > 0.0:
-            use_cutmix = np.ones(batch_size, dtype=np.bool)
+            use_cutmix = np.ones(batch_size, dtype=np.bool_)
             lam_mix = np.random.beta(self.cutmix_alpha, self.cutmix_alpha, size=batch_size)
         else:
             raise ValueError(

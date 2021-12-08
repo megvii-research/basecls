@@ -30,10 +30,10 @@ setuptools.setup(
     python_requires=">=3.6",
     install_requires=reqs,
     extras_require={"all": ["megengine>=1.6.0"]},
-    # entry_points={
-    #     "console_scripts": [
-    #         "cls_train=basecls.tools.cls_train:main",
-    #         "cls_test=basecls.tools.cls_test:main",
-    #     ]
-    # },
+    entry_points={
+        "console_scripts": [
+            "cls_train=basecls.tools.cls_train:main",
+            "cls_test=basecls.tools.cls_test:main",
+        ]
+    },
 )

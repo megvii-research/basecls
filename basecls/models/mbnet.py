@@ -1,5 +1,7 @@
 #!/usr/bin/env python3
-# Copyright (c) 2014-2021 Megvii Inc. All rights reserved.
+# Copyright (c) 2020 Ross Wightman
+# This file has been modified by Megvii ("Megvii Modifications").
+# All Megvii Modifications are Copyright (c) 2014-2021 Megvii Inc. All rights reserved.
 """MobileNet Series
 
 MobileNetV1: `"MobileNets: Efficient Convolutional Neural Networks for Mobile Vision Applications"
@@ -9,11 +11,16 @@ MobileNetV2: `"MobileNetV2: Inverted Residuals and Linear Bottlenecks"
 <https://arxiv.org/abs/1801.04381>`_
 
 MobileNetV3: `"Searching for MobileNetV3" <https://arxiv.org/abs/1905.02244>`_
+
+References:
+    https://github.com/rwightman/pytorch-image-models/blob/master/timm/models/efficientnet.py
+    https://github.com/rwightman/pytorch-image-models/blob/master/timm/models/mobilenetv3.py
 """
 from functools import partial
 from numbers import Real
 from typing import Any, Callable, Mapping, Sequence, Union
 
+import megengine.hub as hub
 import megengine.module as M
 
 from basecls.layers import (
@@ -336,6 +343,9 @@ def _build_mbnetv3_large(**kwargs):
 
 
 @registers.models.register()
+@hub.pretrained(
+    "https://data.megengine.org.cn/research/basecls/models/mbnet/mbnetv1_x025/mbnetv1_x025.pkl"
+)
 def mbnetv1_x025(**kwargs):
     model_args = dict(width_mult=0.25)
     recursive_update(model_args, kwargs)
@@ -343,6 +353,9 @@ def mbnetv1_x025(**kwargs):
 
 
 @registers.models.register()
+@hub.pretrained(
+    "https://data.megengine.org.cn/research/basecls/models/mbnet/mbnetv1_x050/mbnetv1_x050.pkl"
+)
 def mbnetv1_x050(**kwargs):
     model_args = dict(width_mult=0.5)
     recursive_update(model_args, kwargs)
@@ -350,6 +363,9 @@ def mbnetv1_x050(**kwargs):
 
 
 @registers.models.register()
+@hub.pretrained(
+    "https://data.megengine.org.cn/research/basecls/models/mbnet/mbnetv1_x075/mbnetv1_x075.pkl"
+)
 def mbnetv1_x075(**kwargs):
     model_args = dict(width_mult=0.75)
     recursive_update(model_args, kwargs)
@@ -357,6 +373,9 @@ def mbnetv1_x075(**kwargs):
 
 
 @registers.models.register()
+@hub.pretrained(
+    "https://data.megengine.org.cn/research/basecls/models/mbnet/mbnetv1_x100/mbnetv1_x100.pkl"
+)
 def mbnetv1_x100(**kwargs):
     model_args = dict(width_mult=1.0)
     recursive_update(model_args, kwargs)
@@ -364,6 +383,9 @@ def mbnetv1_x100(**kwargs):
 
 
 @registers.models.register()
+@hub.pretrained(
+    "https://data.megengine.org.cn/research/basecls/models/mbnet/mbnetv2_x035/mbnetv2_x035.pkl"
+)
 def mbnetv2_x035(**kwargs):
     model_args = dict(width_mult=0.35)
     recursive_update(model_args, kwargs)
@@ -371,6 +393,9 @@ def mbnetv2_x035(**kwargs):
 
 
 @registers.models.register()
+@hub.pretrained(
+    "https://data.megengine.org.cn/research/basecls/models/mbnet/mbnetv2_x050/mbnetv2_x050.pkl"
+)
 def mbnetv2_x050(**kwargs):
     model_args = dict(width_mult=0.5)
     recursive_update(model_args, kwargs)
@@ -378,6 +403,9 @@ def mbnetv2_x050(**kwargs):
 
 
 @registers.models.register()
+@hub.pretrained(
+    "https://data.megengine.org.cn/research/basecls/models/mbnet/mbnetv2_x075/mbnetv2_x075.pkl"
+)
 def mbnetv2_x075(**kwargs):
     model_args = dict(width_mult=0.75)
     recursive_update(model_args, kwargs)
@@ -385,6 +413,9 @@ def mbnetv2_x075(**kwargs):
 
 
 @registers.models.register()
+@hub.pretrained(
+    "https://data.megengine.org.cn/research/basecls/models/mbnet/mbnetv2_x100/mbnetv2_x100.pkl"
+)
 def mbnetv2_x100(**kwargs):
     model_args = dict(width_mult=1.0)
     recursive_update(model_args, kwargs)
@@ -392,6 +423,9 @@ def mbnetv2_x100(**kwargs):
 
 
 @registers.models.register()
+@hub.pretrained(
+    "https://data.megengine.org.cn/research/basecls/models/mbnet/mbnetv2_x140/mbnetv2_x140.pkl"
+)
 def mbnetv2_x140(**kwargs):
     model_args = dict(width_mult=1.4)
     recursive_update(model_args, kwargs)
@@ -399,6 +433,10 @@ def mbnetv2_x140(**kwargs):
 
 
 @registers.models.register()
+@hub.pretrained(
+    "https://data.megengine.org.cn/research/basecls/models/"
+    "mbnet/mbnetv3_small_x075/mbnetv3_small_x075.pkl"
+)
 def mbnetv3_small_x075(**kwargs):
     model_args = dict(width_mult=0.75)
     recursive_update(model_args, kwargs)
@@ -406,6 +444,10 @@ def mbnetv3_small_x075(**kwargs):
 
 
 @registers.models.register()
+@hub.pretrained(
+    "https://data.megengine.org.cn/research/basecls/models/"
+    "mbnet/mbnetv3_small_x100/mbnetv3_small_x100.pkl"
+)
 def mbnetv3_small_x100(**kwargs):
     model_args = dict(width_mult=1.0)
     recursive_update(model_args, kwargs)
@@ -413,6 +455,10 @@ def mbnetv3_small_x100(**kwargs):
 
 
 @registers.models.register()
+@hub.pretrained(
+    "https://data.megengine.org.cn/research/basecls/models/"
+    "mbnet/mbnetv3_large_x075/mbnetv3_large_x075.pkl"
+)
 def mbnetv3_large_x075(**kwargs):
     model_args = dict(width_mult=0.75)
     recursive_update(model_args, kwargs)
@@ -420,6 +466,10 @@ def mbnetv3_large_x075(**kwargs):
 
 
 @registers.models.register()
+@hub.pretrained(
+    "https://data.megengine.org.cn/research/basecls/models/"
+    "mbnet/mbnetv3_large_x100/mbnetv3_large_x100.pkl"
+)
 def mbnetv3_large_x100(**kwargs):
     model_args = dict(width_mult=1.0)
     recursive_update(model_args, kwargs)
