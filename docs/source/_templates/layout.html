@@ -1,0 +1,13 @@
+{% extends "!layout.html" %}
+{%- import "webpack-macros.html" as _wp with context %}
+
+{%- block css %}
+  {{ super() }}
+  {{ _webpack.head_js_preload() }}
+{%- endblock %}
+
+{%- block scripts_end %}
+  <meta id="sphinx-pagename" pagename="{{pagename}}">
+  {{ super() }}
+  {{ _wp.body_post() }}
+{%- endblock %}
