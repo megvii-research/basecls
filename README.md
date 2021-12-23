@@ -2,6 +2,8 @@
 
 BaseCls 是一个基于 [MegEngine](https://megengine.org.cn/) 的预训练模型库，帮助大家挑选或训练出更适合自己科研或者业务的模型结构。
 
+文档地址：<https://basecls.readthedocs.io>
+
 ## 安装
 
 ### 安装环境

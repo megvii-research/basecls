@@ -1,0 +1,7 @@
+myst-parser
+pydata-sphinx-theme
+sphinx>=4.1.2
+sphinx-autobuild
+sphinx-autodoc-typehints
+sphinxcontrib-datatemplates
+sphinxcontrib-email

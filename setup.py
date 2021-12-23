@@ -24,7 +24,7 @@ setuptools.setup(
     description="A codebase & model zoo for pretrained backbone based on MegEngine.",
     long_description=long_description,
     long_description_content_type="text/markdown",
-    # url="https://oss.iap.hh-b.brainpp.cn/basecls/master/",
+    url="https://basecls.readthedocs.io/zh_CN/latest/index.html",
     packages=setuptools.find_packages(),
     classifiers=["Programming Language :: Python :: 3", "Operating System :: OS Independent"],
     python_requires=">=3.6",
