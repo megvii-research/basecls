@@ -1,5 +1,7 @@
 # BaseCls
 
+[![Documentation Status](https://readthedocs.org/projects/basecls/badge/?version=latest)](https://basecls.readthedocs.io/zh_CN/latest/?badge=latest) [![CI](https://github.com/megvii-research/basecls/actions/workflows/ci.yml/badge.svg)](https://github.com/megvii-research/basecls/actions/workflows/ci.yml) [![codecov](https://codecov.io/gh/megvii-research/basecls/branch/main/graph/badge.svg?token=EOB6AISNJ0)](https://codecov.io/gh/megvii-research/basecls)
+
 BaseCls 是一个基于 [MegEngine](https://megengine.org.cn/) 的预训练模型库，帮助大家挑选或训练出更适合自己科研或者业务的模型结构。
 
 文档地址：<https://basecls.readthedocs.io>
