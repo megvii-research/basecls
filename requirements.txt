@@ -1,6 +1,7 @@
 basecore@git+https://github.com/megvii-research/basecore.git
 crc32c
 dataclasses;python_version=='3.6'
+psutil
 loguru
 megfile
 numpy>=1.18.0

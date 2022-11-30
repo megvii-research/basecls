@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
-# Copyright (c) 2014-2021 Megvii Inc. All rights reserved.
+# Copyright (c) Megvii Inc. All rights reserved.
+
 from .base_cfg import BaseConfig
 from .effnet_cfg import EffNetConfig, EffNetLiteConfig
 from .hrnet_cfg import HRNetConfig
@@ -9,6 +10,7 @@ from .repvgg_cfg import RepVGGConfig
 from .resmlp_cfg import ResMLPConfig
 from .resnet_cfg import ResNetConfig
 from .snet_cfg import SNetConfig
+from .swin_cfg import SwinConfig
 from .vgg_cfg import VGGConfig
 from .vit_cfg import ViTConfig
 
