@@ -20,7 +20,7 @@ export default {
 
       computed: {
         url: function () {
-          return `${this.$store.getters.OSSPath}/${this.uid}.pkl`
+          return `${this.$store.getters.OSSPath}/${this.uid.split("/")[1]}/${this.uid}.pkl`
         }
       },
 
