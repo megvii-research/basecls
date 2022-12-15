@@ -20,7 +20,8 @@ export default {
 
       computed: {
         url: function () {
-          return `${this.$store.getters.OSSPath}/${this.uid.split("/")[1]}/${this.uid}.pkl`
+          const modelUrl = `${this.uid}/${this.uid.split("/")[1]}`
+          return `${this.$store.getters.OSSPath}/${modelUrl}.pkl`
         }
       },
 
